@@ -6,49 +6,74 @@ public class PlayerController : MonoBehaviour {
 	public float movementSpeed;
 	public float jumpHeight;
 	
-	public bool hasJumped = false;
+	public bool isInJump = false;
 
-	public int collideIgnoreTime;
+	public float collideIgnoreTime;
 
 	private ArrayList collisions = new ArrayList();
 
-	private class TimedCollision
+    private Collider2D currentGround = null;
+    private bool isCurrentGroundSolid = false;
+
+    private class IgnoreCollision
 	{
 		public Collider2D coll1;
 		public Collider2D coll2;
 		public float timeLeft;
 	}
 
-	// Use this for initialization
-	void Start() {
-	
-	}
+    private float epsilon = 0.1f;
 
-	void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D collision)
 	{
-		float diffY = Mathf.Abs (collision.contacts[0].otherCollider.attachedRigidbody.position.y -
-		                         collision.contacts[0].collider.attachedRigidbody.position.y);
-
-		if (diffY < 0.1)
-		{
-			TimedCollision timedCollision = new TimedCollision ();
-			timedCollision.coll1 = collision.contacts[0].otherCollider;
-			timedCollision.coll2 = collision.contacts[0].collider;
-			timedCollision.timeLeft = collideIgnoreTime;
-			collisions.Add(timedCollision);
-
-			Physics2D.IgnoreCollision(collision.contacts[0].collider, collision.contacts[0].otherCollider, true);
-		}
-
-		hasJumped = false;
+        if (collision.collider.gameObject.tag == "platform")
+        {
+            isInJump = false;
+            currentGround = collision.collider;
+            isCurrentGroundSolid = currentGround.gameObject.GetComponent<Platform>().isSolid;
+        }
 	}
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "platform")
+        {
+            var colliders = other.gameObject.GetComponents<EdgeCollider2D>();
+
+            Debug.Assert(colliders.Length == 2, "There should be exactly 2 colliders, trigger and nontrigger!");
+
+            foreach (EdgeCollider2D nonTriggerCollider in colliders)
+            {
+                if (!nonTriggerCollider.isTrigger)
+                {
+                    //we have found non-trigger collider
+                    float topPos = (transform.position.y + GetComponent<BoxCollider2D>().size.y / 2);
+                    float diffY = Mathf.Abs(nonTriggerCollider.attachedRigidbody.position.y - topPos);
+
+                    if (diffY < epsilon)
+                    {
+                        //we're jumping from down
+                        IgnoreCollision timedCollision = new IgnoreCollision();
+                        timedCollision.coll1 = nonTriggerCollider;
+                        timedCollision.coll2 = GetComponent<BoxCollider2D>();
+                        timedCollision.timeLeft = collideIgnoreTime;
+                        collisions.Add(timedCollision);
+
+                        Physics2D.IgnoreCollision(nonTriggerCollider, GetComponent<BoxCollider2D>(), true);
+                    }
+                }
+            }
+        }
+    }
 
 	void FixedUpdate()
 	{
-		for (int i = 0; i < collisions.Count; ++i)
+        HandleInput();
+
+        for (int i = 0; i < collisions.Count; ++i)
 		{
-			TimedCollision tc = collisions[i] as TimedCollision;
-			tc.timeLeft -= 33; //TODO: use delta time
+			IgnoreCollision tc = collisions[i] as IgnoreCollision;
+			tc.timeLeft -= Time.fixedDeltaTime;
 
 			if (tc.timeLeft <= 0)
 			{
@@ -59,22 +84,40 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void Update()
+	void HandleInput()
 	{
-		if (Input.GetKey(KeyCode.LeftArrow))
-		{
-			GetComponent<Rigidbody2D>().AddForce(new Vector2(-movementSpeed, 0), ForceMode2D.Force);
-		}
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            GetComponent<Rigidbody2D>().AddForce(new Vector2(-movementSpeed, 0), ForceMode2D.Force);
+        }
 
-		if (Input.GetKey(KeyCode.RightArrow))
-		{
-			GetComponent<Rigidbody2D>().AddForce(new Vector2(movementSpeed, 0), ForceMode2D.Force);
-		}
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            GetComponent<Rigidbody2D>().AddForce(new Vector2(movementSpeed, 0), ForceMode2D.Force);
+        }
 
-		if (Input.GetKey(KeyCode.Space) && !hasJumped)
-		{
-			hasJumped = true;
-			GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpHeight), ForceMode2D.Impulse);
-		}
-	}
+        if (Input.GetKey(KeyCode.Space) && !isInJump && GetComponent<Rigidbody2D>().velocity.y < epsilon)
+        {
+            isInJump = true;
+
+            if (Input.GetKey(KeyCode.DownArrow) && !isCurrentGroundSolid)
+            {
+                //fall from platform
+                IgnoreCollision timedCollision = new IgnoreCollision();
+                timedCollision.coll1 = currentGround;
+                timedCollision.coll2 = GetComponent<BoxCollider2D>();
+                timedCollision.timeLeft = collideIgnoreTime;
+                collisions.Add(timedCollision);
+
+                Physics2D.IgnoreCollision(currentGround, GetComponent<BoxCollider2D>(), true);
+            }
+            else
+            {
+                //regular jump
+                GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpHeight), ForceMode2D.Impulse);
+            }
+
+            currentGround = null;
+        }
+    }
 }

@@ -1,18 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class TileScript : MonoBehaviour {
+public class Platform : MonoBehaviour {
 
 	public int platformLength;
 	public GameObject tilePrefab;
 	public GameObject firstTilePrefab;
 	public GameObject lastTilePrefab;
+    public bool isSolid;
 
 	private float tileSizeX = 0;
 	private float platformLength_px = 0;
 	private ArrayList tiles = new ArrayList();
 
-	public void ClearPlatform()
+    [ShowOnly] public float tileLeftXPos;
+    [ShowOnly] public float tileRightXPos;
+
+    public void ClearPlatform()
 	{
 		foreach (GameObject tile in tiles)
 		{
@@ -22,7 +26,7 @@ public class TileScript : MonoBehaviour {
 		tiles.Clear();
 	}
 
-	public void DrawPlatform()
+	public void CreatePlatform()
 	{
 		int iX = 0;
 		int i = 0;
@@ -32,7 +36,6 @@ public class TileScript : MonoBehaviour {
 		
 		while (iX < platformLength)
 		{
-			Debug.Log(iX);
 			GameObject tile = GetTile(iX);
 			
 			tiles.Add(tile);
@@ -42,14 +45,25 @@ public class TileScript : MonoBehaviour {
 			iX++;
 		}
 		
-		float edgePoint = (platformLength_px - tileSizeX) / 2;
-		
-		GetComponent<EdgeCollider2D>().points = new Vector2[]{new Vector2(-edgePoint,0), new Vector2(edgePoint, 0)};
+		float edgePoint = platformLength_px / 2;
 
-	}
+        var colliders = GetComponents<EdgeCollider2D>();
+
+        Debug.Assert(colliders.Length == 2, "There should be exactly 2 colliders!");
+
+        colliders[0].points = new Vector2[] { new Vector2(-edgePoint,0), new Vector2(edgePoint, 0) };
+        colliders[0].isTrigger = false;
+
+        colliders[1].points = new Vector2[] { new Vector2(-edgePoint, -0.25f), new Vector2(edgePoint, -0.25f) };
+        colliders[1].isTrigger = true;
+
+        tileLeftXPos = transform.TransformPoint(colliders[0].points[0]).x;
+        tileRightXPos = transform.TransformPoint(colliders[0].points[1]).x;
+    }
 
 	void Start() {
-		DrawPlatform();	
+		ClearPlatform();
+		CreatePlatform();	
 	}
 
 	GameObject GetTile(int index)

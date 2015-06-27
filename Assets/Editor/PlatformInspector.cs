@@ -2,30 +2,30 @@
 using System.Collections;
 using UnityEditor;
 
-[CustomEditor(typeof(TileScript))]
-public class TileScriptInspector : Editor {
+[CustomEditor(typeof(Platform))]
+public class PlatformInspector : Editor {
 
 	public override void OnInspectorGUI() 
 	{
 		DrawDefaultInspector();
-		TileScript myTarget = target as TileScript;
+		Platform myTarget = target as Platform;
 
 		if (GUILayout.Button("Generate") || GUI.changed)
 		{
 			myTarget.ClearPlatform();
-			myTarget.DrawPlatform();
+			myTarget.CreatePlatform();
 		}
 
 		if (GUILayout.Button("Clear"))
 		{
 			myTarget.ClearPlatform();
 		}
-	}
+    }
 
-	public void Awake()
+	/*public void Awake()
 	{
-		TileScript myTarget = target as TileScript;
+		Platform myTarget = target as Platform;
 
 		myTarget.ClearPlatform();
-	}
+	}*/
 }
