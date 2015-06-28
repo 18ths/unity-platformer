@@ -3,13 +3,13 @@ using System.Collections;
 
 public class EnemyCollisionHandler : MonoBehaviour {
 
-    private LevelManager levelManager;
+    private GameManager gameManager;
 
     public float jumpKillFactor;
 
     void Start()
     {
-        levelManager = GameObject.FindGameObjectWithTag("LevelManager").GetComponent<LevelManager>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -21,15 +21,16 @@ public class EnemyCollisionHandler : MonoBehaviour {
 
             // in normalized vector sum of its fabs(components) will be equal to 1
             // if both components are 0.5 we can assume the attack came from above in 45 degree cone
-            if (direction.y > 0.5f) 
+            if (direction.y > 0.5f)
             {
                 //death from above!
                 Destroy(gameObject);
                 collision.collider.gameObject.SendMessage("ForceJump", jumpKillFactor);
+                gameManager.AddScore(100);
                 return;
             }
             else
-                levelManager.KillPlayer(collision.collider.gameObject);
+                gameManager.KillPlayer(collision.collider.gameObject);
         }
     }
 }

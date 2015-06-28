@@ -13,11 +13,16 @@ public class CameraController : MonoBehaviour {
 
     void Start()
     {
-        lookedAt = levelManager.GetComponentInChildren<SpawnPlayer>().Spawn();
+        ResetTarget(levelManager.GetComponentInChildren<SpawnPlayer>().Spawn());
 
         bounds = levelManager.GetComponent<LevelManager>().levelBounds;
         camSize = GetComponent<Camera>().orthographicSize;
-        playerOffset = lookedAt.GetComponent<BoxCollider2D>().size.x/2;
+    }
+
+    public void ResetTarget(GameObject target)
+    {
+        lookedAt = target;
+        playerOffset = lookedAt.GetComponent<BoxCollider2D>().size.x / 2;
     }
 
 	// Update is called once per frame
