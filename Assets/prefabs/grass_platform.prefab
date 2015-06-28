@@ -14,7 +14,7 @@ GameObject:
   - 68: {fileID: 6809208}
   m_Layer: 0
   m_Name: grass_platform
-  m_TagString: Untagged
+  m_TagString: platform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -90,6 +90,9 @@ MonoBehaviour:
   tilePrefab: {fileID: 122806, guid: b6cf52de599d9354cb40d46f6dbb99a0, type: 2}
   firstTilePrefab: {fileID: 179738, guid: b9657cb614961a24babb04bea7b0d4b7, type: 2}
   lastTilePrefab: {fileID: 179854, guid: a770ba31f3049814e802a827085a5e72, type: 2}
+  isSolid: 0
+  tileLeftXPos: 0
+  tileRightXPos: 0
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
@@ -100,6 +103,10 @@ Prefab:
     - target: {fileID: 0}
       propertyPath: m_IsTrigger
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_TagString
+      value: platform
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}

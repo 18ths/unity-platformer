@@ -36,9 +36,21 @@ public class LevelManager : MonoBehaviour {
         colliders[2].isTrigger = false;
     }
 
+    public void KillPlayer(GameObject player)
+    {
+        GetComponentInChildren<GUIText>().text = "umarłeś, beka z typa xD";
+        Destroy(player);
+    }
+
 	void OnTriggerExit2D(Collider2D other)
 	{
-		Debug.Log("game over");
-		Destroy(other.gameObject);
-	}
+        if (other.gameObject.tag == "Player")
+        {
+            KillPlayer(other.gameObject);
+            //we will handle player gameobject destroy in killPlayer method
+            return;
+        }
+
+        Destroy(other.gameObject);
+    }
 }

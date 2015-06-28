@@ -4,7 +4,8 @@ using System.Collections;
 public class CameraController : MonoBehaviour {
 
     public GameObject levelManager;
-    public GameObject lookedAt;
+
+    private GameObject lookedAt;
 
     private Rect bounds;
     private float camSize;
@@ -12,6 +13,8 @@ public class CameraController : MonoBehaviour {
 
     void Start()
     {
+        lookedAt = levelManager.GetComponentInChildren<SpawnPlayer>().Spawn();
+
         bounds = levelManager.GetComponent<LevelManager>().levelBounds;
         camSize = GetComponent<Camera>().orthographicSize;
         playerOffset = lookedAt.GetComponent<BoxCollider2D>().size.x/2;
